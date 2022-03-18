@@ -12,6 +12,7 @@
 }
 html {
     font-size: 62.5%;
+    scroll-behavior: smooth;
 }
 
 .center {
@@ -94,6 +95,23 @@ html {
         height: 210%;
     }
 }
+
+/* Section Heading */
+.section-heading {
+    font-size: 2rem;
+    font-weight: 300;
+    color: #fff;
+    text-transform: uppercase;
+    position: absolute;
+    top: 50%;
+    left: 10rem;
+    transform: translateY(-50%);
+    width: 0;
+    word-break: break-all;
+    line-height: 4;
+}
+/* End of Section Heading */
+
 /* End of Button Section */
 /* End of Common Styles */
 
@@ -289,19 +307,7 @@ html {
     position: relative;
     padding: 10rem 10rem 15rem 10rem;
 }
-.section-2-heading {
-    font-size: 2rem;
-    font-weight: 300;
-    color: #fff;
-    text-transform: uppercase;
-    position: absolute;
-    top: 50%;
-    left: 10rem;
-    transform: translateY(-50%);
-    width: 0;
-    word-break: break-all;
-    line-height: 4;
-}
+
 /* About Me Text */
 .about-me-text {
     width: 80%;
@@ -483,6 +489,9 @@ html {
 .projects-btn{
     left: 50%;
     transform: translateX(-50%);
+}
+.projects-btn .main-btn-line{
+    transition: all o.5s;
 }
 .change > .main-btn-line:nth-child(1){
     transform: rotateZ(45deg) translateX(-0.65rem);

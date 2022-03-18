@@ -134,8 +134,30 @@ projects.forEach((project, i) => {
 });
 
 // Projects Button
+const section3 = document.querySelector('.section-3');
 const projectsBtn = document.querySelector('.projects-btn');
 const projectsBtnText = document.querySelector('.projects-btn span');
+
+const showProjects = (project,i) => {
+    setTimeout(() => {
+        project.style.display = "flex";
+        section3.scrollIntoView({block:"end"});
+    },600);
+    setTimeout(() => {
+        project.style.opacity = "1";
+    },i*200);
+}
+
+const hideProjects = (project,i) => {
+    setTimeout(() => {
+        project.style.display = "none";
+        section3.scrollIntoView({block:"end"});
+    },1200);
+
+    setTimeout(() => {
+        project.style.opacity = "0";
+    },i*100);
+}
 
 let showHideBool = true;
 
@@ -145,19 +167,18 @@ projectsBtn.addEventListener("click", (e) => {
     projectsBtn.firstElementChild.nextElementSibling.classList.toggle("change");
 
     projects.forEach((project, i) => {
-        if(i >= 6) {
+        i >= 6 && (showHideBool ? showProjects(project,i):
+        hideProjects(project,i));
             if(showHideBool){
-                project.style.display = "flex";
-                project.style.opacity = "1";
+                
 
                 projectsBtnText.textContent = "Show Less";
             } else{
-                project.style.display = "none";
-                project.style.opacity = "0";
+                ;
 
                 projectsBtnText.textContent = "Show More";
             }
-        }
+        
     })
     showHideBool = !showHideBool;
 });
