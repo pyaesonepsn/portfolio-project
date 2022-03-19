@@ -80,15 +80,27 @@ mainBtns.forEach((btn) => {
 
 // End of Main Button
 
+
 // Progress Bar
+const sections = document.querySelectorAll("section");
+const progressBar = document.querySelector(".progress-bar");
+
 const halfCircles = document.querySelectorAll(".half-circle");
 const halfCircleTop = document.querySelector(".half-circle-top");
 const progressBarCircle = document.querySelector(".progress-bar-circle");
 
-const progressBarFn = () => {
+const progressBarFn = (bigImgWrapper = false) => {
+    let pageHeight = 0;
+    let scrolledPortion = 0;
     const pageViewportHeight = window.innerHeight;
-    const pageHeight = document.documentElement.scrollHeight;
-    const scrolledPortion = window.pageYOffset;
+
+    if(!bigImgWrapper) {
+        pageHeight = document.documentElement.scrollHeight;
+        scrolledPortion = window.pageYOffset;
+    }else {
+        pageHeight = bigImgWrapper.firstElementChild.scrollHeight;
+        scrolledPortion = bigImgWrapper.scrollTop;
+    }
 
     const scrolledPortionDegree = (scrolledPortion / (pageHeight - pageViewportHeight)) * 360;
     
@@ -102,7 +114,37 @@ const progressBarFn = () => {
             halfCircleTop.style.opacity = "1";
         }
     });
-}
+    const scrollBool = (scrolledPortion + pageViewportHeight) - 0.5 === pageHeight;
+   
+    // Progress Bar Click
+    progressBar.onclick = e => {
+        e.preventDefault()
+
+        if(!bigImgWrapper){
+            const sectionPositions = Array.from(sections).map(section => scrolledPortion + section.getBoundingClientRect().top);
+        
+            const position = sectionPositions.find(sectionPosition => {
+            return sectionPosition > scrolledPortion;
+            });
+
+            scrollBool ? window.scrollTo(0,0) : window.scrollTo(0,position);
+        }else {
+            scrollBool ? bigImgWrapper.scrollTo(0,0) : bigImgWrapper.scrollTo(0,bigImgWrapper.scrollHeight);
+        }
+
+    };
+    // End of Progress Bar Click
+
+    // Arrow Rotation
+    if(scrollBool){
+        progressBarCircle.style.transform = "rotate(180deg)";
+    }else {
+        progressBarCircle.style.transform = "rotate(0)";
+    }
+    // End of Arrow Rotation
+};
+
+progressBarFn();
 // End of Progress Bar
 
 
@@ -125,7 +167,7 @@ document.addEventListener('scroll',() => {
     progressBarFn();
 });
 
-// End ofNavigation
+// End of Navigation
 
 
 // About Me Text
@@ -154,6 +196,7 @@ projects.forEach((project, i) => {
     project.addEventListener('mouseleave',() => {
         project.firstElementChild.style.top = '2rem';
     })
+
     // Big Project Image
     project.addEventListener('click',() => {
         const bigImgWrapper = document.createElement('div');
@@ -167,12 +210,20 @@ projects.forEach((project, i) => {
         bigImgWrapper.appendChild(bigImg);
         document.body.style.overflowY = "hidden";
 
+        progressBarFn(bigImgWrapper);
+
+        bigImgWrapper.onscroll = () => {
+            progressBarFn(bigImgWrapper);
+        }
+
         projectHideBtn.classList.add("change");
 
         projectHideBtn.onclick = ()=>{
             projectHideBtn.classList.remove("change");
             bigImgWrapper.remove()
             document.body.style.overflowY = "scroll";
+
+            progressBarFn();
         };
     });
     // End of Big Project Image
