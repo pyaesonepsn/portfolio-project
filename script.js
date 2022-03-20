@@ -3,8 +3,11 @@
 const mouseCircle = document.querySelector('.mouse-circle');
 const mouseDot = document.querySelector('.mouse-dot');
 
+let mouseCircleBool = true;
+
 const mouseCircleFn = (x,y) => {
-    mouseCircle.style.cssText = `top: ${y}px; left: ${x}px; opacity:1`;
+    mouseCircleBool && (mouseCircle.style.cssText = `top: ${y}px; left: ${x}px; opacity:1`);
+    
     mouseDot.style.cssText = `top: ${y}px; left: ${x}px; opacity:1`;
 };
 // End of Mouse Circle
@@ -44,17 +47,80 @@ const animateCircles = (e,x,y) => {
 }
 // End of Animated Circles
 
+let hoveredElPosition = [];
+
+const stickyElement = (x,y,hoveredEl) => {
+    // Sticky Elements
+    if(hoveredEl.classList.contains("sticky")){
+        hoveredElPosition.length < 1 && (hoveredElPosition = [hoveredEl.offsetTop, hoveredEl.offsetLeft]);
+        
+        hoveredEl.style.cssText =`top: ${y}px; left: ${x}px`;
+ 
+        if(hoveredEl.offsetTop <= hoveredElPosition[0] - 100 || 
+           hoveredEl.offsetTop >= hoveredElPosition[0] + 100 ||
+           hoveredEl.offsetLeft <= hoveredElPosition[1] - 100 ||
+           hoveredEl.offsetLeft >= hoveredElPosition[1] + 100
+          ){
+            hoveredEl.style.cssText = "";
+            hoveredElPosition = [];
+        }
+ 
+        hoveredEl.onmouseleave = () => {
+         hoveredEl.style.cssText = "";
+         hoveredElPosition = [];
+        };
+     };
+     // End of Sticky Elements
+};
+
+// Mouse Circle Transform
+const mouseCircleTransform = (hoveredEl) => {
+    if(hoveredEl.classList.contains("pointer-enter")){
+        hoveredEl.onmousemove = () => {
+            mouseCircleBool = false;
+            mouseCircle.style.cssText = `
+            width: ${hoveredEl.getBoundingClientRect().width}px;
+            height: ${hoveredEl.getBoundingClientRect().height}px;
+            top: ${hoveredEl.getBoundingClientRect().top}px;
+            left: ${hoveredEl.getBoundingClientRect().left}px;
+            opacity: 1;
+            transform: translate(0,0);
+            animation: none;
+            border-radius: ${getComputedStyle(hoveredEl).borderRadius};
+            transition: width .5s, height .5s, top .5s, left .5s, transform .5s, border-radius .5s;
+            `;
+        }
+        
+        hoveredEl.onmouseleave = () => {
+            mouseCircleBool = true;
+        }
+        document.onscroll = () => {
+            if(!mouseCircleBool){
+                mouseCircle.style.top = `${hoveredEl.getBoundingClientRect().top}px`;
+            }
+        }
+    }
+}
+// End of Mouse Circle Transform
+
+
 document.body.addEventListener('mousemove', (e) => {
     let x = e.clientX;
     let y = e.clientY;
 
     mouseCircleFn(x,y);
     animateCircles(e,x,y);
-})
+
+    const hoveredEl = document.elementFromPoint(x,y);
+
+    stickyElement(x,y,hoveredEl);  
+
+    mouseCircleTransform(hoveredEl);
+});
 document.body.addEventListener('mouseleave', () => {
     mouseCircle.style.opacity = '0';
     mouseDot.style.opacity = '0';
-})
+});
 
 // Main Button
 const mainBtns = document.querySelectorAll('.main-btn');
@@ -89,20 +155,24 @@ const halfCircles = document.querySelectorAll(".half-circle");
 const halfCircleTop = document.querySelector(".half-circle-top");
 const progressBarCircle = document.querySelector(".progress-bar-circle");
 
-const progressBarFn = (bigImgWrapper = false) => {
+let scrolledPortion = 0;
+let scrollBool = false;
+let imageWrapper = false;
+
+const progressBarFn = (bigImgWrapper) => {
+    imageWrapper = bigImgWrapper;
     let pageHeight = 0;
-    let scrolledPortion = 0;
     const pageViewportHeight = window.innerHeight;
 
-    if(!bigImgWrapper) {
+    if(!imageWrapper) {
         pageHeight = document.documentElement.scrollHeight;
         scrolledPortion = window.pageYOffset;
     }else {
-        pageHeight = bigImgWrapper.firstElementChild.scrollHeight;
-        scrolledPortion = bigImgWrapper.scrollTop;
+        pageHeight = imageWrapper.firstElementChild.scrollHeight;
+        scrolledPortion = imageWrapper.scrollTop;
     }
 
-    const scrolledPortionDegree = (scrolledPortion / (pageHeight - pageViewportHeight)) * 360;
+    scrolledPortionDegree = (scrolledPortion / (pageHeight - pageViewportHeight)) * 360;
     
     halfCircles.forEach(el => {
         el.style.transform = `rotate(${scrolledPortionDegree}deg)`;
@@ -116,24 +186,7 @@ const progressBarFn = (bigImgWrapper = false) => {
     });
     const scrollBool = (scrolledPortion + pageViewportHeight) - 0.5 === pageHeight;
    
-    // Progress Bar Click
-    progressBar.onclick = e => {
-        e.preventDefault()
-
-        if(!bigImgWrapper){
-            const sectionPositions = Array.from(sections).map(section => scrolledPortion + section.getBoundingClientRect().top);
-        
-            const position = sectionPositions.find(sectionPosition => {
-            return sectionPosition > scrolledPortion;
-            });
-
-            scrollBool ? window.scrollTo(0,0) : window.scrollTo(0,position);
-        }else {
-            scrollBool ? bigImgWrapper.scrollTo(0,0) : bigImgWrapper.scrollTo(0,bigImgWrapper.scrollHeight);
-        }
-
-    };
-    // End of Progress Bar Click
+    
 
     // Arrow Rotation
     if(scrollBool){
@@ -144,6 +197,25 @@ const progressBarFn = (bigImgWrapper = false) => {
     // End of Arrow Rotation
 };
 
+// Progress Bar Click
+progressBar.addEventListener("click",e => {
+    e.preventDefault()
+
+    if(!imageWrapper){
+        const sectionPositions = Array.from(sections).map(section => scrolledPortion + section.getBoundingClientRect().top);
+    
+        const position = sectionPositions.find(sectionPosition => {
+        return sectionPosition > scrolledPortion;
+        });
+
+        scrollBool ? window.scrollTo(0,0) : window.scrollTo(0,position);
+    }else {
+        scrollBool ? imageWrapper.scrollTo(0,0) : imageWrapper.scrollTo(0,imageWrapper.scrollHeight);
+    }
+
+});
+// End of Progress Bar Click
+
 progressBarFn();
 // End of Progress Bar
 
@@ -152,7 +224,7 @@ progressBarFn();
 const menuIcon = document.querySelector(".menu-icon");
 const navbar = document.querySelector(".navbar");
 
-document.addEventListener('scroll',() => {
+const scrollFn = () => {
     menuIcon.classList.add("show-menu-icon");
     navbar.classList.add("hide-navbar");
 
@@ -160,13 +232,17 @@ document.addEventListener('scroll',() => {
         menuIcon.classList.remove("show-menu-icon");
         navbar.classList.remove("hide-navbar");
     }
-    menuIcon.addEventListener('click',() => {
-        menuIcon.classList.remove("show-menu-icon");
-        navbar.classList.remove("hide-navbar");
-    });
-    progressBarFn();
-});
 
+    progressBarFn();
+}
+
+document.addEventListener('scroll', scrollFn);
+    
+
+menuIcon.addEventListener('click',() => {
+     menuIcon.classList.remove("show-menu-icon");
+    navbar.classList.remove("hide-navbar");
+});
 // End of Navigation
 
 
@@ -199,29 +275,35 @@ projects.forEach((project, i) => {
 
     // Big Project Image
     project.addEventListener('click',() => {
-        const bigImgWrapper = document.createElement('div');
-        bigImgWrapper.className = "project-img-wrapper";
-        container.appendChild(bigImgWrapper);
+        const imageWrapper = document.createElement('div');
+        imageWrapper.className = "project-img-wrapper";
+        container.appendChild(imageWrapper);
 
         const bigImg = document.createElement('img');
         bigImg.className = "project-img"
         const imgPath =project.firstElementChild.getAttribute("src").split(".")[0];
         bigImg.setAttribute("src", `${imgPath}-big.jpg`);
-        bigImgWrapper.appendChild(bigImg);
+        imageWrapper.appendChild(bigImg);
         document.body.style.overflowY = "hidden";
 
-        progressBarFn(bigImgWrapper);
+        document.removeEventListener("scroll",scrollFn);
 
-        bigImgWrapper.onscroll = () => {
-            progressBarFn(bigImgWrapper);
+        mouseCircle.style.opacity = 0;
+
+        progressBarFn(imageWrapper);
+
+        imageWrapper.onscroll = () => {
+            progressBarFn(imageWrapper);
         }
 
         projectHideBtn.classList.add("change");
 
         projectHideBtn.onclick = ()=>{
             projectHideBtn.classList.remove("change");
-            bigImgWrapper.remove()
+            imageWrapper.remove()
             document.body.style.overflowY = "scroll";
+
+            document.addEventListener("scroll",scrollFn);
 
             progressBarFn();
         };
