@@ -722,6 +722,25 @@ html {
 .form-submit-btn:hover{
     cursor: pointer;
 }
+
+/* Form Validation */
+.message{
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #f55e5e;
+    text-transform: uppercase;
+    letter-spacing: .1rem;
+    margin: 0 auto 1rem 0;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.error.message {
+    visibility: visible;
+    opacity: 1;
+}
+/* End of Form Validation */
+
 /* End of Form */
 
 /* Slide Show */
@@ -800,9 +819,7 @@ html {
         width: 12.5rem;
         height: 12.5rem;
     }
-    .circle {
-        display: none;
-    }
+    
     .progress-bar{
         right: 1rem;
         bottom: 0;
